@@ -3,18 +3,9 @@
 import AppKit
 
 extension NSImage {
-    func lockFocus(flipped: Bool, block: () -> ()) {
-        self.lockFocusFlipped(true)
-        block()
-        self.unlockFocus()
-    }
-
     func bitmapRepresentation() -> NSBitmapImageRep {
         let cgRef = self.CGImageForProposedRect(nil, context: nil, hints: nil)
-        let result = NSBitmapImageRep(CGImage: cgRef.takeUnretainedValue())
-
-        cgRef.release()
-
+        let result = NSBitmapImageRep(CGImage: cgRef.takeRetainedValue())
         return result
     }
 }
@@ -79,18 +70,17 @@ struct Swamp {
 
         let point = CGPointMake(0, self.icon.size.height - usedRect.size.height - offset)
 
-        self.icon.lockFocus(false) {
-            layoutManager.drawGlyphsForGlyphRange(renderedRange, atPoint:point)
-        }
+        self.icon.lockFocusFlipped(true)
+        layoutManager.drawGlyphsForGlyphRange(renderedRange, atPoint:point)
+        self.icon.unlockFocus()
     }
 
     func save(path: String) {
-        let data = self.icon
+        self.icon
             .bitmapRepresentation()
             .representationUsingType(NSBitmapImageFileType.NSPNGFileType,
                                      properties: nil)
-
-        data.writeToFile(path, atomically:true)
+            .writeToFile(path, atomically:true)
     }
 }
 
