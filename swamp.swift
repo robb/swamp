@@ -5,8 +5,7 @@ import AppKit
 extension NSImage {
     func bitmapRepresentation() -> NSBitmapImageRep {
         let cgRef = self.CGImageForProposedRect(nil, context: nil, hints: nil)
-        let result = NSBitmapImageRep(CGImage: cgRef.takeRetainedValue())
-        return result
+        return NSBitmapImageRep(CGImage: cgRef.takeRetainedValue())
     }
 }
 
