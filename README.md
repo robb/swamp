@@ -6,7 +6,7 @@ process.
 ## How to use
 
 
-1. Switch your Xcode using `sudo xcode-select -switch /Applications/Xcode6-Beta2.app/`
+1. Switch your Xcode using `sudo xcode-select -switch /Applications/Xcode6-Beta3.app/`
 2. Call swamp like so: `./swamp.swift -- input.png output.png "Hello World"`  
    If you're seeing crazy unicode noise or `<unknown>:0: no such file or directory: 'input.png'`, you most likely forgot the `--`.
 
