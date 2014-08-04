@@ -1,4 +1,4 @@
-#!/usr/bin/xcrun --sdk macosx -r swift -i
+#!/usr/bin/xcrun swift
 
 import AppKit
 
@@ -88,9 +88,9 @@ if countElements(Process.arguments) < 3 {
     exit(1)
 }
 
-let input = Process.arguments[0]
-let output = Process.arguments[1]
-let text = Process.arguments[2]
+let input = Process.arguments[1]
+let output = Process.arguments[2]
+let text = Process.arguments[3]
 
 let icon: NSImage? = NSImage(data: NSData(contentsOfFile: input))
 
