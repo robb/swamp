@@ -38,8 +38,8 @@ struct Swamp {
 
     func addText(text: String) {
         let offset = self.icon.size.height / 20
-        let containerSize = CGSizeMake(self.icon.size.width,
-                                       self.icon.size.height - 2 * offset)
+        let containerSize = CGSize(width: self.icon.size.width,
+                                   height: self.icon.size.height - 2 * offset)
         var fontSize = self.icon.size.height / 4
 
         var textContainer: NSTextContainer
@@ -83,7 +83,7 @@ struct Swamp {
     }
 }
 
-if countElements(Process.arguments) < 3 {
+if Process.arguments.count < 3 {
     println("Usage: stamp.swift -- [input] [output] [text]")
     exit(1)
 }
