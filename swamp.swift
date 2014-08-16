@@ -83,7 +83,7 @@ struct Swamp {
     }
 }
 
-if Process.arguments.count < 3 {
+if Process.arguments.count < 4 {
     println("Usage: stamp.swift -- [input] [output] [text]")
     exit(1)
 }
