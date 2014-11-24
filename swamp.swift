@@ -5,7 +5,7 @@ import AppKit
 extension NSImage {
     func bitmapRepresentation() -> NSBitmapImageRep {
         let cgRef = self.CGImageForProposedRect(nil, context: nil, hints: nil)
-        return NSBitmapImageRep(CGImage: cgRef.takeRetainedValue())
+        return NSBitmapImageRep(CGImage: cgRef!.takeRetainedValue())
     }
 }
 
@@ -27,7 +27,7 @@ struct Swamp {
                 return shadow
             }(),
             NSParagraphStyleAttributeName: {
-                let paragraphStyle = NSParagraphStyle.defaultParagraphStyle().mutableCopy() as NSMutableParagraphStyle!
+                let paragraphStyle = NSParagraphStyle.defaultParagraphStyle().mutableCopy() as NSMutableParagraphStyle
                 paragraphStyle.alignment = NSTextAlignment.CenterTextAlignment
                 paragraphStyle.lineBreakMode = NSLineBreakMode.ByWordWrapping;
                 return paragraphStyle
@@ -78,7 +78,7 @@ struct Swamp {
         self.icon
             .bitmapRepresentation()
             .representationUsingType(NSBitmapImageFileType.NSPNGFileType,
-                                     properties: nil)
+                                     properties: [:])?
             .writeToFile(path, atomically:true)
     }
 }
@@ -92,7 +92,7 @@ let input = Process.arguments[1]
 let output = Process.arguments[2]
 let text = Process.arguments[3]
 
-let icon: NSImage? = NSImage(data: NSData(contentsOfFile: input))
+let icon: NSImage? = NSImage(data: NSData(contentsOfFile: input)!)
 
 if icon == nil {
     println("Could not load file \(input)")
