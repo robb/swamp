@@ -1,11 +1,15 @@
-#!/usr/bin/xcrun swift
+#!/usr/bin/xcrun swift 
 
 import AppKit
 
+enum SwampError: ErrorType {
+    case BitmapRepresentationError
+}
+
 extension NSImage {
-    func bitmapRepresentation() -> NSBitmapImageRep {
-        let cgRef = self.CGImageForProposedRect(nil, context: nil, hints: nil)
-        return NSBitmapImageRep(CGImage: cgRef!.takeRetainedValue())
+    func bitmapRepresentation() throws -> NSBitmapImageRep {
+        guard let cgRef = CGImageForProposedRect(nil, context: nil, hints: nil) else { throw SwampError.BitmapRepresentationError }
+        return NSBitmapImageRep(CGImage: cgRef)
     }
 }
 
@@ -19,7 +23,6 @@ struct Swamp {
         self.textAttributes = [
             NSShadowAttributeName: {
                 let unit = icon.size.height / 64
-
                 let shadow = NSShadow()
                 shadow.shadowOffset = CGSizeMake(0, -unit)
                 shadow.shadowBlurRadius = unit
@@ -27,9 +30,9 @@ struct Swamp {
                 return shadow
             }(),
             NSParagraphStyleAttributeName: {
-                let paragraphStyle = NSParagraphStyle.defaultParagraphStyle().mutableCopy() as NSMutableParagraphStyle
-                paragraphStyle.alignment = NSTextAlignment.CenterTextAlignment
-                paragraphStyle.lineBreakMode = NSLineBreakMode.ByWordWrapping;
+                let paragraphStyle = NSParagraphStyle.defaultParagraphStyle().mutableCopy() as! NSMutableParagraphStyle
+                paragraphStyle.alignment = .Center
+                paragraphStyle.lineBreakMode = .ByWordWrapping
                 return paragraphStyle
             }(),
             NSForegroundColorAttributeName: NSColor.whiteColor()
@@ -37,10 +40,9 @@ struct Swamp {
     }
 
     func addText(text: String) {
-        let offset = self.icon.size.height / 20
-        let containerSize = CGSize(width: self.icon.size.width,
-                                   height: self.icon.size.height - 2 * offset)
-        var fontSize = self.icon.size.height / 4
+        let offset = icon.size.height / 20
+        let containerSize = CGSize(width: icon.size.width, height: icon.size.height - 2 * offset)
+        var fontSize = icon.size.height / 4
 
         var textContainer: NSTextContainer
         var textStorage: NSTextStorage
@@ -51,11 +53,11 @@ struct Swamp {
 
         // Keep decreasing the font size until it's either 8 pts or the text
         // fits completely
-        do {
+        repeat {
             textContainer = NSTextContainer(containerSize: containerSize)
 
-            textStorage = NSTextStorage(string: text, attributes:textAttributes)
-            textStorage.font = NSFont(name:self.fontName, size: fontSize)
+            textStorage = NSTextStorage(string: text, attributes: textAttributes)
+            textStorage.font = NSFont(name: fontName, size: fontSize)
 
             layoutManager = NSLayoutManager()
             layoutManager.addTextContainer(textContainer)
@@ -65,26 +67,24 @@ struct Swamp {
             usedRect = layoutManager.usedRectForTextContainer(textContainer)
 
             fontSize -= 0.1
-        } while renderedRange.length < countElements(text) && fontSize > 8
+        } while renderedRange.length < text.characters.count && fontSize > 8
 
-        let point = CGPointMake(0, self.icon.size.height - usedRect.size.height - offset)
+        let point = CGPointMake(0, icon.size.height - usedRect.size.height - offset)
 
-        self.icon.lockFocusFlipped(true)
+        icon.lockFocusFlipped(true)
         layoutManager.drawGlyphsForGlyphRange(renderedRange, atPoint:point)
-        self.icon.unlockFocus()
+        icon.unlockFocus()
     }
 
-    func save(path: String) {
-        self.icon
-            .bitmapRepresentation()
-            .representationUsingType(NSBitmapImageFileType.NSPNGFileType,
-                                     properties: [:])?
-            .writeToFile(path, atomically:true)
+    func save(path: String) throws {
+        try icon.bitmapRepresentation()
+                .representationUsingType(.NSPNGFileType, properties: [:])?
+                .writeToFile(path, atomically: true)
     }
 }
 
 if Process.arguments.count < 4 {
-    println("Usage: stamp.swift -- [input] [output] [text]")
+    print("Usage: stamp.swift -- [input] [output] [text]")
     exit(1)
 }
 
@@ -92,13 +92,15 @@ let input = Process.arguments[1]
 let output = Process.arguments[2]
 let text = Process.arguments[3]
 
-let icon: NSImage? = NSImage(data: NSData(contentsOfFile: input)!)
-
-if icon == nil {
-    println("Could not load file \(input)")
+guard let data = NSData(contentsOfFile: input), icon = NSImage(data: data) else {
+    print("Could not load file \(input)")
     exit(1)
 }
 
-let swamp = Swamp(icon: icon!)
+let swamp = Swamp(icon: icon)
 swamp.addText(text)
-swamp.save(output)
+do {
+    try swamp.save(output)
+} catch let error {
+    print("Error creating icon. \(error)")
+}
